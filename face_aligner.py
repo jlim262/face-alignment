@@ -33,6 +33,25 @@ class FaceAligner:
         self.landmarks_type = self._to_fa_type(landmarks_type)
         self.fa = face_alignment.FaceAlignment(self.landmarks_type, flip_input=flip_input, device=device, face_detector=face_detector)
 
+    def get_aligned_landmarks_from_images(self, images):
+        if(images is None):
+            raise ValueError("images parameter should not be None.")
+        if (isinstance(images, list)):
+            raise ValueError("images parameter should be a list.")
+        
+        outputs = []
+        for image in images:
+            aligned_images = self.align_from_image(image)           
+            for ai in aligned_images:
+                output = self.get_landmarks_from_image(ai)
+                outputs.append(output[0])
+
+        return outputs
+
+    def get_landmarks_from_image(self, image):
+        predictions = self.fa.get_landmarks_from_image(image)
+        return predictions
+
     def align_from_image(self, image):
         predictions = self.fa.get_landmarks_from_image(image)
         if(predictions is None):
@@ -69,7 +88,6 @@ class FaceAligner:
         
         return outputs
         
-
     def align_from_directory(self, path, extensions=['.jpg', '.png'], recursive=True, show_progress_bar=True):
         pass
 
