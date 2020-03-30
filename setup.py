@@ -33,7 +33,7 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
     long_description = readme_file.read()
 
-VERSION = find_version('face_aligner', '__init__.py')
+VERSION = find_version('face_utils', '__init__.py')
 
 requirements = [
     'torch',
@@ -46,7 +46,7 @@ requirements = [
 ]
 
 setup(
-    name='face_aligner',
+    name='face_utils',
     version=VERSION,
 
     description="Face alignment tool from Python",
