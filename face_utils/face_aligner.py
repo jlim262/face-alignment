@@ -27,9 +27,9 @@ class FaceAligner:
         self.output_height = self.output_width if output_height is None else output_height
         self.output_rect = np.float32([
                             [0, 0],
-                            [self.output_height, 0],
-                            [0, self.output_width],
-                            [self.output_height, self.output_width]])
+                            [self.output_width, 0],
+                            [0, self.output_height],
+                            [self.output_width, self.output_height]])
         self.landmarks_type = self._to_fa_type(landmarks_type)
         self.fa = face_alignment.FaceAlignment(self.landmarks_type, flip_input=flip_input, device=device, face_detector=face_detector)
 
@@ -83,7 +83,7 @@ class FaceAligner:
 
             # Compute the Perspective Homography and Extract the output from the image
             transform = cv2.getPerspectiveTransform(image_corners, self.output_rect)
-            output = cv2.warpPerspective(image, transform, (self.output_height, self.output_width))
+            output = cv2.warpPerspective(image, transform, (self.output_width, self.output_height))
             outputs.append(output)
         
         return outputs
@@ -98,10 +98,3 @@ class FaceAligner:
             return face_alignment.LandmarksType._2halfD
         elif(type == LandmarksType._3D):
             return face_alignment.LandmarksType._3D
-
-if __name__ == '__main__':
-    fa = FaceAligner(256, device='cpu')
-    input_img = io.imread('./test/aflw-test.jpg')
-    outputs = fa.align_from_image(input_img)
-    plt.imshow(outputs[0])
-    plt.show()
