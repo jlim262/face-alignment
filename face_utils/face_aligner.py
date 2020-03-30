@@ -1,4 +1,5 @@
 from __future__ import print_function
+import os
 from enum import Enum
 import numpy as np
 import cv2
@@ -52,6 +53,25 @@ class FaceAligner:
         predictions = self.fa.get_landmarks_from_image(image)
         return predictions
 
+    def align_from_file(self, path, extensions=['.jpg', '.png']):
+        if(os.path.isfile(path) and os.path.splitext(path)[1] in extensions):
+            img = io.imread(path)
+            return self.align_from_image(img)
+
+    def align_from_directory(self, path, extensions=['.jpg', '.png'], recursive=True, show_progress_bar=True):
+        outputs = []
+        for root, _, f_names in os.walk(path):
+            for f in f_names:
+                file_path = os.path.join(root, f)
+                ext = os.path.splitext(file_path)[1]
+                if(ext in extensions):
+                    outputs.append(self.align_from_file(file_path, extensions))
+
+            if not recursive:
+                break
+        
+        return outputs
+
     def align_from_image(self, image):
         predictions = self.fa.get_landmarks_from_image(image)
         if(predictions is None):
@@ -87,9 +107,6 @@ class FaceAligner:
             outputs.append(output)
         
         return outputs
-        
-    def align_from_directory(self, path, extensions=['.jpg', '.png'], recursive=True, show_progress_bar=True):
-        pass
 
     def _to_fa_type(self, type):
         if(type == LandmarksType._2D):
