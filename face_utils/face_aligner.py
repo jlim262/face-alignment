@@ -1,12 +1,16 @@
-from __future__ import print_function
 import os
 from enum import Enum
+
+import face_alignment
+import PIL
 import numpy as np
 import cv2
-import face_alignment
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 from skimage import io
+
+import face_utils
 
 
 class LandmarksType(Enum):
@@ -33,6 +37,7 @@ class FaceAligner:
                             [self.output_width, self.output_height]])
         self.landmarks_type = self._to_fa_type(landmarks_type)
         self.fa = face_alignment.FaceAlignment(self.landmarks_type, flip_input=flip_input, device=device, face_detector=face_detector)
+        self.plotter = face_utils.PlotFace(landmarks_type)
 
     def get_aligned_landmarks_from_images(self, images):
         if(images is None):
@@ -42,14 +47,14 @@ class FaceAligner:
         
         outputs = []
         for image in images:
-            aligned_images = self.align_from_image(image)           
+            aligned_images = self.align_from_image(image)
             for ai in aligned_images:
-                output = self.get_landmarks_from_image(ai)
+                output = self.get_landmarks(ai)
                 outputs.append(output[0])
 
         return outputs
 
-    def get_landmarks_from_image(self, image):
+    def get_landmarks(self, image):
         predictions = self.fa.get_landmarks_from_image(image)
         return predictions
 
@@ -72,13 +77,15 @@ class FaceAligner:
         
         return outputs
 
-    def align_from_image(self, image):
-        predictions = self.fa.get_landmarks_from_image(image)
+    def align_from_image(self, image, landmark=False, generate_landmarks_image=True):
+        predictions = self.get_landmarks(image)
         if(predictions is None):
             return None
 
         outputs = []
-        for prediction in predictions:
+        landmarks_imgs = []
+        for i, prediction in enumerate(predictions):
+
             # Compute the Anchor Landmarks
             # This ensures the eyes and chin will not move within the output
             right_eye_mean = np.mean(prediction[36:42], axis=0)
@@ -90,7 +97,7 @@ class FaceAligner:
             mean = ((middle_of_eye * 3) + chin) * 0.25
             centered = prediction - mean 
             right_vector = (left_eye_mean - right_eye_mean)
-            up_vector    = (chin        - middle_of_eye)
+            up_vector = (chin - middle_of_eye)
 
             # Divide by the length ratio to ensure a square aspect ratio
             right_vector /= np.linalg.norm(right_vector) / np.linalg.norm(up_vector)
@@ -105,8 +112,14 @@ class FaceAligner:
             transform = cv2.getPerspectiveTransform(image_corners, self.output_rect)
             output = cv2.warpPerspective(image, transform, (self.output_width, self.output_height))
             outputs.append(output)
+
+            pred = self.get_landmarks(output)
+            if(generate_landmarks_image):
+                landmarks_img = self.plotter.plot(output, pred[0])
+                landmarks_imgs.append(landmarks_img)
+                # cv2.imwrite('./test_{}.png'.format(str(i)),landmarks_img)
         
-        return outputs
+        return outputs, landmarks_imgs
 
     def _to_fa_type(self, type):
         if(type == LandmarksType._2D):

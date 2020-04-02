@@ -12,14 +12,14 @@ class Test(TestCase):
         output_width = 200
         output_height = 300
         fa = FaceAligner(output_width, output_height, device='cpu')
-        outputs = fa.align_from_image(self.one_face_img)
+        outputs, _ = fa.align_from_image(self.one_face_img)
         for output in outputs:
             self.assertEqual(output_width, output.shape[1])
             self.assertEqual(output_height, output.shape[0])
 
     def test_multiple_faces(self):        
         fa = FaceAligner(200, 200, device='cpu')
-        outputs = fa.align_from_image(self.four_faces_img)
+        outputs, _ = fa.align_from_image(self.four_faces_img)
         self.assertEqual(len(outputs), 4)
 
     def test_align_from_directory_non_recursive(self):
