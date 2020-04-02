@@ -10,20 +10,9 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 from skimage import io
 
-import face_utils
-
-
-class LandmarksType(Enum):
-    """Enum class defining the type of landmarks to detect.
-
-    ``_2D`` - the detected points ``(x,y)`` are detected in a 2D space and follow the visible contour of the face
-    ``_2halfD`` - this points represent the projection of the 3D points into 3D
-    ``_3D`` - detect the points ``(x,y,z)``` in a 3D space
-
-    """
-    _2D = 1
-    _2halfD = 2
-    _3D = 3
+# import face_utils
+from face_plot import FacePlot
+from landmarks_type import LandmarksType
 
 
 class FaceAligner:
@@ -37,7 +26,7 @@ class FaceAligner:
                             [self.output_width, self.output_height]])
         self.landmarks_type = self._to_fa_type(landmarks_type)
         self.fa = face_alignment.FaceAlignment(self.landmarks_type, flip_input=flip_input, device=device, face_detector=face_detector)
-        self.plotter = face_utils.PlotFace(landmarks_type)
+        # self.plotter = face_utils.PlotFace(landmarks_type)
 
     def get_aligned_landmarks_from_images(self, images):
         if(images is None):
@@ -77,7 +66,7 @@ class FaceAligner:
         
         return outputs
 
-    def align_from_image(self, image, landmark=False, generate_landmarks_image=True):
+    def align_from_image(self, image, landmark=False, plotter=None):
         predictions = self.get_landmarks(image)
         if(predictions is None):
             return None
@@ -114,12 +103,15 @@ class FaceAligner:
             outputs.append(output)
 
             pred = self.get_landmarks(output)
-            if(generate_landmarks_image):
-                landmarks_img = self.plotter.plot(output, pred[0])
+            if(plotter is not None and isinstance(plotter, FacePlot)):
+                landmarks_img = plotter.plot(output, pred[0])
                 landmarks_imgs.append(landmarks_img)
                 # cv2.imwrite('./test_{}.png'.format(str(i)),landmarks_img)
-        
-        return outputs, landmarks_imgs
+
+        def emptylist2none(dlist):
+            return None if not dlist else dlist
+
+        return emptylist2none(outputs), emptylist2none(landmarks_imgs)
 
     def _to_fa_type(self, type):
         if(type == LandmarksType._2D):

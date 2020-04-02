@@ -3,4 +3,4 @@ __email__ = 'jongyoon@apache.org'
 __version__ = '0.0.1'
 
 from .face_aligner import FaceAligner, LandmarksType
-from .plot_face import PlotFace
+from .face_plot import FacePlot

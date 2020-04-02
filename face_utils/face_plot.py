@@ -1,19 +1,25 @@
 import cv2
 import numpy as np
 
-import face_utils
+# import face_utils
 # from .face_aligner import LandmarksType
+from landmarks_type import LandmarksType
 
-class PlotFace:
-    def __init__(self, landmarks_type=face_utils.LandmarksType._3D):
+
+class FacePlot:
+    def __init__(self, landmarks_type=LandmarksType._3D, use_face=False, use_white_bg=True):
         self.landmarks_type = landmarks_type
+        self.use_face = use_face
+        self.use_white_bg = use_white_bg
     
-    def plot(self, face_image, landmarks, is_white_bg=True):        
+    def plot(self, face_frame, landmarks):        
         output = None
-        if(is_white_bg):
-            output = np.ones(shape=[face_image.shape[0], face_image.shape[1], 3], dtype=np.uint8) * 255
+        if(self.use_face):
+            output = face_frame
+        elif(self.use_white_bg):
+            output = np.ones(shape=[face_frame.shape[0], face_frame.shape[1], 3], dtype=np.uint8) * 255
         else:
-            output = np.zeros(shape=[face_image.shape[0], face_image.shape[1], 3], dtype=np.uint8)
+            output = np.zeros(shape=[face_frame.shape[0], face_frame.shape[1], 3], dtype=np.uint8)        
 
         # face
         self._plot_element(output, landmarks[0:17], (0,255,0))
