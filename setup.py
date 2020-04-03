@@ -62,7 +62,7 @@ setup(
     packages=find_packages(exclude=('face_utils/test',)),
 
     install_requires=requirements,
-    license='MIt',
+    license='MIT',
     zip_safe=True,
 
     classifiers=[        
