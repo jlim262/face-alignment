@@ -17,7 +17,10 @@ cd face-alignment
 pip install -r requirements.txt
 ```
 
-## How to run
+## How to run example 
+```bash
+python -m face_utils.face_aligner
+```
 
 ## Directory hierachy
 
