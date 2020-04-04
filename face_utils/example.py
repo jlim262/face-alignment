@@ -17,8 +17,9 @@ if __name__ == '__main__':
     row = 10
     for i, landmarks_img in enumerate(result.LM_imgs):
         fig.add_subplot(row, col, i+1)
-        # plt.imshow(output)
         plt.imshow(landmarks_img)
+
+    FacePlot.plot_show(result.aligned_faces[0], result.aligned_LMs[0])
 
     # plt.imshow(output[0])
     plt.show()
