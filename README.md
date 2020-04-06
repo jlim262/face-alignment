@@ -1,17 +1,18 @@
-# face-alignment
+# face-utils
 
 ## Introduction
 This project is an utility for alignment of a human face from an image. 
+![example](./example_result.png)
 
 ## Prerequisites
 - Python 3.7
 
 ## Installation
 ```bash
-git clone https://github.com/jlim262/face-alignment.git
+git clone https://github.com/jlim262/face-utils.git
 ```
 ```bash
-cd face-alignment
+cd face-utils
 ```
 ```bash
 pip install -r requirements.txt
