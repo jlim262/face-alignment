@@ -75,19 +75,19 @@ class FaceAligner:
         predictions = self.fa.get_landmarks_from_image(image)
         return predictions
 
-    def align_from_file(self, path, extensions=['.jpg', '.png'], plotter=None):
+    def align_from_file(self, path, extensions=['.jpg', '.png'], plot=True, plot_LM_on_face=False):
         if(os.path.isfile(path) and os.path.splitext(path)[1] in extensions):
             img = io.imread(path)
-            return self.align_from_image(img, plotter)
+            return self.align_from_image(img, plot, plot_LM_on_face)
 
-    def align_from_directory(self, path, extensions=['.jpg', '.png'], recursive=True, show_progress_bar=True, plotter=None):
+    def align_from_directory(self, path, extensions=['.jpg', '.png'], recursive=True, show_progress_bar=True, plot=True, plot_LM_on_face=False):
         aligned_results = []
         for root, _, f_names in os.walk(path):
             for f in f_names:
                 file_path = os.path.join(root, f)
                 ext = os.path.splitext(file_path)[1]
                 if(ext in extensions):
-                    aligned_result = self.align_from_file(file_path, extensions, plotter)                    
+                    aligned_result = self.align_from_file(file_path, extensions, plot, plot_LM_on_face)
                     aligned_results.append(aligned_result)
 
             if not recursive:
@@ -95,7 +95,7 @@ class FaceAligner:
         
         return aligned_results
 
-    def align_from_image(self, image, plotter=None):
+    def align_from_image(self, image, plot=True, plot_LM_on_face=False):
         predictions = self.get_landmarks(image)
         if(predictions is None):
             return None
@@ -138,8 +138,9 @@ class FaceAligner:
 
             aligned_prediction = self.get_landmarks(aligned_face)[0]            
             aligned_result.aligned_LMs.append(aligned_prediction)
-            if(plotter is not None and isinstance(plotter, FacePlot)):
-                LM_img = plotter.plot(aligned_face, aligned_prediction)
+            
+            if(plot):
+                LM_img = FacePlot.plot(aligned_face, aligned_prediction, use_face=plot_LM_on_face)
                 aligned_result.LM_imgs.append(LM_img)
 
         # return emptylist2none(aligned_faces), emptylist2none(LM_imgs)

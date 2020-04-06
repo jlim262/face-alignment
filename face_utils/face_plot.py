@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 
-# import face_alignment
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from skimage import io
@@ -9,44 +8,39 @@ import collections
 
 from face_utils.landmarks_type import LandmarksType
 
-
-class FacePlot:
-    def __init__(self, landmarks_type=LandmarksType._3D, use_face=False, use_white_bg=True):
-        self.landmarks_type = landmarks_type
-        self.use_face = use_face
-        self.use_white_bg = use_white_bg
+class FacePlot(object):
+    pred_type = collections.namedtuple('prediction_type', ['slice', 'color'])
+    pred_types = {'face': pred_type(slice(0, 17), (255, 0, 255)),
+                    'eyebrow1': pred_type(slice(17, 22), (0, 0, 255)),
+                    'eyebrow2': pred_type(slice(22, 27), (0, 0, 255)),
+                    'nose': pred_type(slice(27, 31), (0, 255, 0)),
+                    'nostril': pred_type(slice(31, 36), (0, 255, 0)),
+                    'eye1': pred_type(slice(36, 42), (0, 255, 255)),
+                    'eye2': pred_type(slice(42, 48), (0, 255, 255)),
+                    'lips': pred_type(slice(48, 60), (255, 0, 0)),
+                    'teeth': pred_type(slice(60, 68), (255, 0, 0))
+                    }
     
-    def plot(self, face_frame, landmarks):        
+    @classmethod
+    def plot(cls, face_frame, landmarks, use_face=False, use_white_bg=True):        
         output = None
-        if(self.use_face):
+        if(use_face):
             output = face_frame
-        elif(self.use_white_bg):
+        elif(use_white_bg):
             output = np.ones(shape=[face_frame.shape[0], face_frame.shape[1], 3], dtype=np.uint8) * 255
         else:
             output = np.zeros(shape=[face_frame.shape[0], face_frame.shape[1], 3], dtype=np.uint8)        
 
-        # face
-        self._plot_element(output, landmarks[0:17], (0,255,0))
-
-        # eyebrows
-        self._plot_element(output, landmarks[17:22], (255,0,0))
-        self._plot_element(output, landmarks[22:27], (255,0,0))
-
-        # nose
-        self._plot_element(output, landmarks[27:31], (255,255,0))
-        self._plot_element(output, landmarks[31:36], (255,255,0))
-
-        # eyes
-        self._plot_element(output, landmarks[36:42], (0,0,255), is_closed=True)
-        self._plot_element(output, landmarks[42:48], (0,0,255), is_closed=True)
-
-        # mouth
-        self._plot_element(output, landmarks[48:60], (255,100,255), is_closed=True)
-        self._plot_element(output, landmarks[60:68], (255,100,255), is_closed=True)
+        for key, pred_type in cls.pred_types.items():
+            if key in ['eye1, eye2, lips, teeth']:
+                cls._plot_element(output, landmarks[pred_type.slice], pred_type.color, is_closed=True)
+            else:
+                cls._plot_element(output, landmarks[pred_type.slice], pred_type.color)
 
         return output
 
-    def _plot_element(self, output, landmarks, color, connect_line=True, is_closed=False, marker_size=0):
+    @classmethod
+    def _plot_element(cls, output, landmarks, color, connect_line=True, is_closed=False, marker_size=0):
         if(landmarks is None or len(landmarks) == 0):
             return
 
@@ -61,35 +55,11 @@ class FacePlot:
         XY= XY.reshape((-1, 1, 2))
         cv2.polylines(output, [XY], is_closed, color)
 
-    @staticmethod
-    def plot_show(face_frame, landmarks):
-        # 2D-Plot
-        plot_style = dict(marker='o',
-                        markersize=4,
-                        linestyle='-',
-                        lw=2)
-
-        pred_type = collections.namedtuple('prediction_type', ['slice', 'color'])
-        pred_types = {'face': pred_type(slice(0, 17), (0.682, 0.780, 0.909, 0.5)),
-                    'eyebrow1': pred_type(slice(17, 22), (1.0, 0.498, 0.055, 0.4)),
-                    'eyebrow2': pred_type(slice(22, 27), (1.0, 0.498, 0.055, 0.4)),
-                    'nose': pred_type(slice(27, 31), (0.345, 0.239, 0.443, 0.4)),
-                    'nostril': pred_type(slice(31, 36), (0.345, 0.239, 0.443, 0.4)),
-                    'eye1': pred_type(slice(36, 42), (0.596, 0.875, 0.541, 0.3)),
-                    'eye2': pred_type(slice(42, 48), (0.596, 0.875, 0.541, 0.3)),
-                    'lips': pred_type(slice(48, 60), (0.596, 0.875, 0.541, 0.3)),
-                    'teeth': pred_type(slice(60, 68), (0.596, 0.875, 0.541, 0.4))
-                    }
-
+    @classmethod
+    def plot_show(cls, face_frame, landmarks, use_face=False):
         fig = plt.figure(figsize=plt.figaspect(.5))
         ax = fig.add_subplot(1, 2, 1)
-        ax.imshow(face_frame)
-
-        for pred_type in pred_types.values():
-            ax.plot(landmarks[pred_type.slice, 0],
-                    landmarks[pred_type.slice, 1],
-                    color=pred_type.color, **plot_style)
-
+        ax.imshow(cls.plot(face_frame, landmarks, use_face))
         ax.axis('off')
 
         # 3D-Plot
@@ -101,7 +71,7 @@ class FacePlot:
                         alpha=1.0,
                         edgecolor='b')
 
-        for pred_type in pred_types.values():
+        for pred_type in cls.pred_types.values():
             ax.plot3D(landmarks[pred_type.slice, 0] * 1.2,
                     landmarks[pred_type.slice, 1],
                     landmarks[pred_type.slice, 2], color='blue')
