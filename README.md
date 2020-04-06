@@ -5,7 +5,9 @@ This project is an utility for alignment of a human face from an image.
 
 From the input image, 
 
-![input_img](./test/assets/sub_dir/five.jpg)
+<p align="center">
+    <img src="./test/assets/sub_dir/five.jpg">
+</p>
 
 Find all faces and return aligned faces and landmarks.
 
